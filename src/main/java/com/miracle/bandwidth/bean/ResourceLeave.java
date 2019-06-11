@@ -1,12 +1,11 @@
-package com.miracle.bandwidth.controller;
+package com.miracle.bandwidth.bean;
 
 import java.util.Date;
 
-public class SprintTest {
-	private String name;
+public class ResourceLeave {
 	private Date startDate;
 	private Date endDate;
-	private int duration;
+	private String leaveType;
 
 	/**
 	 * @return the startDate
@@ -37,30 +36,16 @@ public class SprintTest {
 	}
 
 	/**
-	 * @return the duration
+	 * @return the leaveType
 	 */
-	public int getDuration() {
-		return duration;
+	public String getLeaveType() {
+		return leaveType;
 	}
 
 	/**
-	 * @param duration the duration to set
+	 * @param leaveType the leaveType to set
 	 */
-	public void setDuration(int duration) {
-		this.duration = duration;
-	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
+	public void setLeaveType(String leaveType) {
+		this.leaveType = leaveType;
 	}
 }

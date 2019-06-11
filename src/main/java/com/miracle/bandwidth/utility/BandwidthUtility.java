@@ -12,8 +12,10 @@ import java.util.Map.Entry;
 
 import org.springframework.stereotype.Service;
 
-import com.miracle.bandwidth.controller.ResourceLeave;
-import com.miracle.bandwidth.controller.SprintTest;
+import com.miracle.bandwidth.bean.ResourceLeave;
+import com.miracle.bandwidth.bean.SprintTest;
+import com.miracle.cognitive.global.bean.SprintResource;
+import com.miracle.cognitive.global.bean.Velocity;
 import com.miracle.database.bean.Release;
 import com.miracle.database.bean.Resource;
 import com.miracle.database.bean.Team;
@@ -24,7 +26,8 @@ public class BandwidthUtility {
 	public List<SprintTest> retrieveSprintDetails(Release release, int duration) {
 		List<SprintTest> releaseTest = new ArrayList<>();
 		boolean isEndDate = false;
-		for (int i = 0; i < release.getNoOfSprints(); i++) {
+		Date startDate = release.getStartDate();
+		for (int i = 1; i <= release.getNoOfSprints(); i++) {
 
 			LocalDateTime localDateTime = release.getStartDate().toInstant().atZone(ZoneId.systemDefault())
 					.toLocalDateTime();
@@ -40,7 +43,7 @@ public class BandwidthUtility {
 			release1.setEndDate(sprintEndDate);
 			int days = (int) ChronoUnit.DAYS.between(release.getStartDate().toInstant(), sprintEndDate.toInstant());
 			release1.setDuration(days);
-			release1.setName("Sprint:" + i);
+			release1.setName("Sprint" + i);
 			releaseTest.add(release1);
 
 			if (isEndDate) {
@@ -48,23 +51,29 @@ public class BandwidthUtility {
 			}
 			release.setStartDate(sprintEndDate);
 		}
+		release.setStartDate(startDate);
 		return releaseTest;
 	}
 
-	public Map<String, Double> calcVelocity(Team team, Map<String, Integer> resourceDataMap) {
+	public List<Velocity> calcVelocity(Team team, List<SprintResource> resourceDataMap) {
 		int velocity = team.getVelocity();
 		int workingHours = team.getWorkingHours();
 		double velocityRatio = workingHours / velocity;
-		Map<String, Double> map = new HashMap<>();
-		for (Entry<String, Integer> entrySet : resourceDataMap.entrySet()) {
-			map.put(entrySet.getKey(), entrySet.getValue() / velocityRatio);
+		List<Velocity> list = new ArrayList<Velocity>();
+		for (SprintResource sprintResource : resourceDataMap) {
+			Velocity resourceVelocity = new Velocity();
+			resourceVelocity.setSprintName(sprintResource.getSprintName());
+			resourceVelocity.setVelocity((int) (sprintResource.getResourceHours() / velocityRatio));
+			list.add(resourceVelocity);
 		}
-		return map;
+		return list;
 	}
 
-	public Map<String, Integer> getResourceLeaves(String team, List<Resource> resourceList,
+	public List<SprintResource> getResourceLeaves(String team, List<Resource> resourceList,
 			List<SprintTest> sprintList) {
 		Map<String, List<ResourceLeave>> resourceMap = new HashMap<>();
+		int resourceCount = 1;
+
 		for (Resource resource : resourceList) {
 
 			if (resource.getTeamName().equalsIgnoreCase(team) && resource.getLeaveType() != null) {
@@ -83,10 +92,10 @@ public class BandwidthUtility {
 				} else {
 					resourceMap.put(resource.getResourceName(), list);
 				}
+				resourceCount++;
 			}
 		}
-
-		Map<String, Integer> map = new HashMap<>();
+		List<SprintResource> list = new ArrayList<>();
 		for (SprintTest sprintData : sprintList) {
 			int count = 0;
 			Date ra = sprintData.getStartDate();
@@ -118,9 +127,11 @@ public class BandwidthUtility {
 				ra = Date.from(sprintStartLocal.atZone(ZoneId.systemDefault()).toInstant());
 
 			}
-			map.put(sprintData.getName(), (sprintData.getDuration() + 1 - count) * 8);
+			SprintResource sprintResource = new SprintResource();
+			sprintResource.setSprintName(sprintData.getName());
+			sprintResource.setResourceHours(((sprintData.getDuration() * resourceCount) - count) * 8);
+			list.add(sprintResource);
 		}
-		System.out.println(map);
-		return map;
+		return list;
 	}
 }

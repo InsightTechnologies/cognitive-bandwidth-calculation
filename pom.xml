@@ -6,6 +6,7 @@
 	<artifactId>cognitive-bandwidth-calculation</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Cognitive-Bandwidth-Calculation</name>
+	<packaging>war</packaging>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
